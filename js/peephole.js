@@ -28,7 +28,7 @@ class Peephole {
       throw new Error("Display size (dW and dH parameters) should be nonzero integers!");
     this.displayElem.style.backgroundRepeat = "no-repeat";
     this.displayElem.style.backgroundSize = this.nW * Math.round(this.dcW / this.dnW) + "px " + this.nH * Math.round(this.dcH / this.dnH) + "px";
-  	this.displayElem.style.imageRendering = "optimizespeed";
+  	this.displayElem.style.imageRendering = "crisp-edges";
 
     this.mnW = this.dnW;
     this.mnH = this.dnH;
