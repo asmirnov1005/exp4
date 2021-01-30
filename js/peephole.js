@@ -116,11 +116,14 @@ class Peephole {
   }
 
   _cursorPosition(event) {
-    var a, x = 0, y = 0;
-    event = event || window.event;
-    a = this.imgElem.getBoundingClientRect();
-    x = event.pageX - a.left;
-    y = event.pageY - a.top;
+    if (event.type == "touchstart" || event.type == "touchmove" || event.type == "touchend") {
+      event = event.originalEvent || event;
+      const touches = event.touches || event.changedTouches;
+      event = touches[0];
+    }
+    const rect = this.imgElem.getBoundingClientRect();
+    let x = event.pageX - rect.left;
+    let y = event.pageY - rect.top;
     x = x - window.pageXOffset;
     y = y - window.pageYOffset;
     return { x : x, y : y };
