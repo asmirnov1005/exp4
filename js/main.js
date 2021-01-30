@@ -19,5 +19,5 @@ function imgElemLoaded() {
   };
   const ph = new Peephole(imgElem, displayElem, displaySize = displaySize, events = events);
 
-  ph.log(); // TODO: Remove it later
+  ph.log();
 }

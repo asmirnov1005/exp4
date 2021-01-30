@@ -1,6 +1,6 @@
 class Peephole {
 
-  speed = 0.25; // TODO: parameter
+  speed = 0.25;
 
   touchClientPosition = null;
   touchNaturalPosition = null;
@@ -28,7 +28,10 @@ class Peephole {
       throw new Error("Display size (dW and dH parameters) should be nonzero integers!");
     this.displayElem.style.backgroundRepeat = "no-repeat";
     this.displayElem.style.backgroundSize = this.nW * Math.round(this.dcW / this.dnW) + "px " + this.nH * Math.round(this.dcH / this.dnH) + "px";
-  	this.displayElem.style.imageRendering = "crisp-edges";
+  	this.displayElem.style.imageRendering = "-moz-crisp-edges";
+    this.displayElem.style.imageRendering = "-webkit-crisp-edges";
+    this.displayElem.style.imageRendering = "pixelated";
+    this.displayElem.style.imageRendering = "crisp-edges";
 
     this.mnW = this.dnW;
     this.mnH = this.dnH;
@@ -46,7 +49,6 @@ class Peephole {
     this._initEvents(events);
   }
 
-  // TODO: Remove it later
   log() {
     console.log('Natural Size', this.nW, this.nH);
     console.log('Image Size', this.cW, this.cH);
