@@ -1,10 +1,10 @@
 class Peephole {
 
-  touchClientPosition = null;
-  touchNaturalPosition = null;
-  naturalPosition = null;
-
   constructor(imgElem, displayElem, displaySize, events = {}) {
+    this.touchClientPosition = null;
+    this.touchNaturalPosition = null;
+    this.naturalPosition = null;
+
     this.speed = 0.25;
 
     this.imgElem = imgElem;
