@@ -62,8 +62,12 @@ class Peephole {
     this.onMouseup = events.onMouseup ? events.onMouseup : function () {};
     this.imgElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
     this.magnifierElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
+    this.imgElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
+    this.magnifierElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
     document.addEventListener("mousemove", this._onMagnifierMoveEvent.bind(this));
+    document.addEventListener("touchmove", this._onMagnifierMoveEvent.bind(this));
     document.addEventListener("mouseup", this._documentOnMouseupEvent.bind(this));
+    document.addEventListener("touchend", this._documentOnMouseupEvent.bind(this));
   }
 
   _imgElemOnMousedownEvent(event) {
