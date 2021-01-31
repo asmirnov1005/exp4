@@ -8,7 +8,7 @@
 	</head>
 	<body>
 		<div id="main-container">
-		  <img id="image" src="images/test.png">
+		  <img id="image" src="images/img_1.png">
 			<div>
 				<div id="display">
 					<div id="target-top"></div>
@@ -18,6 +18,12 @@
 				</div>
 				<div id="info">Selected pixel: ...</div>
 			</div>
+		</div>
+		<div>
+			<select id="img-select" onchange="selectOnChange()">
+	      <option value="images/img_1.png">Image 1</option>
+	      <option value="images/img_2.png">Image 2</option>
+	    </select>
 		</div>
 		<script src="js/main.js"></script>
 	</body>

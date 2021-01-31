@@ -1,4 +1,8 @@
 const imgElem = document.getElementById("image");
+const displayElem = document.getElementById("display");
+
+let ph = null;
+
 if (imgElem.complete) {
   imgElemLoaded();
 } else {
@@ -9,15 +13,29 @@ if (imgElem.complete) {
 }
 
 function imgElemLoaded() {
-  const displayElem = document.getElementById("display");
-  let displaySize = { w : 21, h : 21 };
-  let events = {
-    onMouseup : function (event, position) {
-      document.getElementById("info").textContent =
-        "Selected pixel: (" + position.x + ", " + position.y + ")";
-    }
+  if (ph) return;
+
+  let phOptions = {
+    displaySize : { width : 21, height : 21 },
+    events : { onMousedown : onMousedown, onMouseup : onMouseup },
+    speed : 0.25,
+    showGlass : false,
   };
-  const ph = new Peephole(imgElem, displayElem, displaySize = displaySize, events = events);
+  ph = new Peephole(imgElem, displayElem, phOptions);
 
   ph.log();
+}
+
+function selectOnChange(event) {
+  imgElem.src = document.getElementById("img-select").value;
+}
+
+function onMousedown(event, position) {
+  imgElem.style.opacity = 0.5;
+}
+
+function onMouseup(event, position) {
+  imgElem.style.opacity = 1;
+  document.getElementById("info").textContent =
+    "Selected pixel: (" + position.x + ", " + position.y + ")";
 }

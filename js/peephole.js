@@ -1,11 +1,12 @@
 class Peephole {
 
-  constructor(imgElem, displayElem, displaySize, events = {}) {
+  constructor(imgElem, displayElem, options) {
     this.touchClientPosition = null;
     this.touchNaturalPosition = null;
     this.naturalPosition = null;
 
-    this.speed = 0.25;
+    this.speed = options.speed || 1;
+    this.showGlass = options.showGlass === false ? false : true;
 
     this.imgElem = imgElem;
     this.nW = this.imgElem.naturalWidth;
@@ -20,8 +21,10 @@ class Peephole {
     this.dcH = this.displayElem.clientHeight;
     if (!this.dcW || !this.dcH)
       throw new Error("Display element size (width and height) should be specified!");
-    this.dnW = displaySize.w;
-    this.dnH = displaySize.h;
+    if (!options.displaySize)
+      throw new Error("`displaySize` is required option!");
+    this.dnW = options.displaySize.width;
+    this.dnH = options.displaySize.height;
     // TODO: displaySize.w, displaySize.h should be === 1 mod 2
     // TODO: this.dcW / this.dnW should be integer
     if (!this.dnW || !this.dnH)
@@ -33,20 +36,22 @@ class Peephole {
     this.displayElem.style.imageRendering = "pixelated";
     this.displayElem.style.imageRendering = "crisp-edges";
 
-    this.mnW = this.dnW;
-    this.mnH = this.dnH;
-    this.mcW = Math.round(this.mnW * this.cW / this.nW);
-    this.mcH = Math.round(this.mnH * this.cH / this.nH);
-    this.magnifierElem = document.createElement("div");
-    this.magnifierElem.classList.add("peephole-magnifier");
-    this.magnifierElem.style.display = "none";
-    this.magnifierElem.style.position = "absolute";
-    this.magnifierElem.style.width = this.mcW + "px";
-    this.magnifierElem.style.height = this.mcH + "px";
-    this.magnifierElem.style.border = "solid black 1px";
-    this.imgElem.parentElement.insertBefore(this.magnifierElem, this.imgElem);
+    if (this.showGlass) {
+      this.mnW = this.dnW;
+      this.mnH = this.dnH;
+      this.mcW = Math.round(this.mnW * this.cW / this.nW);
+      this.mcH = Math.round(this.mnH * this.cH / this.nH);
+      this.glassElem = document.createElement("div");
+      this.glassElem.classList.add("peephole-glass");
+      this.glassElem.style.display = "none";
+      this.glassElem.style.position = "absolute";
+      this.glassElem.style.width = this.mcW + "px";
+      this.glassElem.style.height = this.mcH + "px";
+      this.glassElem.style.border = "solid black 1px";
+      this.imgElem.parentElement.insertBefore(this.glassElem, this.imgElem);
+    }
 
-    this._initEvents(events);
+    this._initEvents(options.events || {});
   }
 
   log() {
@@ -54,20 +59,26 @@ class Peephole {
     console.log('Image Size', this.cW, this.cH);
     console.log('Display Natural Size', this.dnW, this.dnH);
     console.log('Display Element Size', this.dcW, this.dcH);
-    console.log('Magnifier Natural Size', this.mnW, this.mnH);
-    console.log('Magnifier Element Size', this.mcW, this.mcH);
+    if (this.showGlass) {
+      console.log('Glass Natural Size', this.mnW, this.mnH);
+      console.log('Glass Element Size', this.mcW, this.mcH);
+    }
   }
 
   _initEvents(events) {
-    this.onMouseup = events.onMouseup ? events.onMouseup : function () {};
+    this.onMousedown = events.onMousedown;
+    this.onMouseup = events.onMouseup;
     this.imgElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
-    this.magnifierElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
     this.imgElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
-    this.magnifierElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
-    document.addEventListener("mousemove", this._onMagnifierMoveEvent.bind(this));
-    document.addEventListener("touchmove", this._onMagnifierMoveEvent.bind(this));
+    if (this.showGlass) {
+      this.glassElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
+      this.glassElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
+    }
+    document.addEventListener("mousemove", this._onPeepholeMoveEvent.bind(this));
+    document.addEventListener("touchmove", this._onPeepholeMoveEvent.bind(this));
     document.addEventListener("mouseup", this._documentOnMouseupEvent.bind(this));
     document.addEventListener("touchend", this._documentOnMouseupEvent.bind(this));
+    this.imgElem.addEventListener('load', this._imgElemOnLoad.bind(this));
   }
 
   _imgElemOnMousedownEvent(event) {
@@ -78,12 +89,17 @@ class Peephole {
       x : Math.round(this.touchClientPosition.x * this.nW / this.cW),
       y : Math.round(this.touchClientPosition.y * this.nH / this.cH),
     }
-    this.magnifierElem.style.display = "block";
+    if (this.onMousedown)
+      setTimeout(function (x, y) {
+        this.onMousedown(event, { x : x, y : y });
+      }.bind(this, this.touchNaturalPosition.x, this.touchNaturalPosition.y));
+    if (this.showGlass)
+      this.glassElem.style.display = "block";
     this.displayElem.style.backgroundImage = "url('" + this.imgElem.src + "')";
-    this._onMagnifierMoveEvent(event);
+    this._onPeepholeMoveEvent(event);
   }
 
-  _onMagnifierMoveEvent(event) {
+  _onPeepholeMoveEvent(event) {
     event.preventDefault();
 
     if (!this.touchClientPosition) return;
@@ -100,7 +116,8 @@ class Peephole {
       x : Math.round(this.naturalPosition.x * this.cW / this.nW) - 1,
       y : Math.round(this.naturalPosition.y * this.cH / this.nH) - 1,
     }
-    this._updateMagnifierPosition(clientPosition);
+    if (this.showGlass)
+      this._updateglassElemPosition(clientPosition);
 
     this._updateDisplay(this.naturalPosition);
   }
@@ -109,7 +126,10 @@ class Peephole {
     event.preventDefault();
 
     if (!this.touchClientPosition) return;
-    this.onMouseup(event, this.naturalPosition);
+    if (this.onMouseup)
+      setTimeout(function (x, y) {
+        this.onMouseup(event, { x : x, y : y });
+      }.bind(this, this.naturalPosition.x, this.naturalPosition.y));
     this.touchClientPosition = null;
     this.touchNaturalPosition = null;
     this.naturalPosition = null;
@@ -129,9 +149,14 @@ class Peephole {
     return { x : x, y : y };
   }
 
-  _updateMagnifierPosition(position) {
-    this.magnifierElem.style.left = (position.x + this.mcW / 2) + "px";
-    this.magnifierElem.style.top = (position.y + this.mcH / 2) + "px";
+  _imgElemOnLoad(event) {
+    if (this.displayElem.style.backgroundImage != "")
+      this.displayElem.style.backgroundImage = "url('" + this.imgElem.src + "')";
+  }
+
+  _updateglassElemPosition(position) {
+    this.glassElem.style.left = (position.x + this.mcW / 2) + "px";
+    this.glassElem.style.top = (position.y + this.mcH / 2) + "px";
   }
 
   _updateDisplay(position) {
