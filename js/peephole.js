@@ -1,5 +1,19 @@
 class Peephole {
 
+  /*
+    options = {
+      speed : <int>,
+      showGlass : <bool>,
+      displaySize : {
+        width : <int>,
+        height : <int>,
+      },
+      events : {
+        onMousedown : <function(event:<object>, position:{x:<int>, y:<int>})>,
+        onMouseup : <function(event:<object>, position:{x:<int>, y:<int>})>
+      },
+    }
+  */
   constructor(imgElem, displayElem, options) {
     this.speed = options.speed || 1;
 
@@ -11,13 +25,17 @@ class Peephole {
   }
 
   log() {
-    console.log('Natural Size', this._nW, this._nH);
-    console.log('Image Size', this._cW, this._cH);
-    console.log('Display Natural Size', this._dnW, this._dnH);
-    console.log('Display Element Size', this._dcW, this._dcH);
+    console.log('Speed: ', this.speed);
+    console.log('Image Element:', this._imgElem);
+    console.log('Image Natural Size: ' + this._nW + 'x' + this._nH);
+    console.log('Image Client Size: ' + this._cW + 'x' + this._cH);
+    console.log('Display Element:', this._displayElem);
+    console.log('Display Natural Size: ' + this._dnW + 'x' + this._dnH);
+    console.log('Display Client Size: ' + this._dcW + 'x' + this._dcH);
     if (this._showGlass) {
-      console.log('Glass Natural Size', this._gnW, this._gnH);
-      console.log('Glass Element Size', this._gcW, this._gcH);
+      console.log('Glass Element:', this._glassElem);
+      console.log('Glass Natural Size: ' + this._gnW + 'x' + this._gnH);
+      console.log('Glass Client Size: ' + this._gcW + 'x' + this._gcH);
     }
   }
 
