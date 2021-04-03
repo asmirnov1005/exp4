@@ -21,8 +21,8 @@ class Peephole {
     this.speed = options.speed || 1;
 
     this._initImage(imgElem);
-    this._initCrosshair(crosshairElem, options.crosshair);
-    this._initGlass(options.showGlass);
+    this._initCrosshair(crosshairElem, options);
+    this._initGlass(options);
     this._initEvents(options.events || {});
     this._setupPositions();
   }
@@ -34,7 +34,7 @@ class Peephole {
     console.log('Image Client Size: ' + this._cW + 'x' + this._cH);
     console.log('Crosshair Element:', this._crosshairElem);
     console.log('Crosshair Natural Size: ' + this._dnW + 'x' + this._dnH);
-    console.log('Crosshair Client Size: ' + this._dcW + 'x' + this._dcH);
+    console.log('Crosshair Client Size: ' + this._ccW + 'x' + this._ccH);
     if (this._showGlass) {
       console.log('Glass Element:', this._glassElem);
       console.log('Glass Natural Size: ' + this._gnW + 'x' + this._gnH);
@@ -62,33 +62,33 @@ class Peephole {
   _initCrosshair(crosshairElem, options) {
     this._crosshairElem = crosshairElem;
 
-    this._dcW = this._crosshairElem.clientWidth;
-    this._dcH = this._crosshairElem.clientHeight;
-    if (!this._dcW || !this._dcH)
+    this._ccW = this._crosshairElem.clientWidth;
+    this._ccH = this._crosshairElem.clientHeight;
+    if (!this._ccW || !this._ccH)
       throw new Error("Crosshair element size (width and height) should be specified!");
-    if (options.round === true)
-      this._crosshairElem.style.borderRadius = Math.round(Math.min(this._dcW, this._dcH) / 2) + "px";
-    if (!options.size)
+    if (options.crosshair.round === true)
+      this._crosshairElem.style.borderRadius = Math.round(Math.min(this._ccW, this._ccH) / 2) + "px";
+    if (!options.crosshair.size)
       throw new Error("`crosshair.size` is required option!");
-    this._dnW = options.size.width;
-    this._dnH = options.size.height;
+    this._dnW = options.crosshair.size.width;
+    this._dnH = options.crosshair.size.height;
     if (this._dnW % 2 !== 1 || this._dnH % 2 !== 1)
       throw new Error("Width and height of the crosshair should be odd integers!");
-    if (this._dcW % this._dnW !== 0 || this._dcH % this._dnH !== 0)
+    if (this._ccW % this._dnW !== 0 || this._ccH % this._dnH !== 0)
       throw new Error("Width and height of the crosshair element should be divisible by its natural width and height.");
     if (!this._dnW || !this._dnH)
       throw new Error("Crosshair size (dW and dH parameters) should be nonzero integers!");
 
     this._crosshairElem.style.backgroundRepeat = "no-repeat";
-    this._crosshairElem.style.backgroundSize = this._nW * Math.round(this._dcW / this._dnW) + "px " + this._nH * Math.round(this._dcH / this._dnH) + "px";
+    this._crosshairElem.style.backgroundSize = this._nW * Math.round(this._ccW / this._dnW) + "px " + this._nH * Math.round(this._ccH / this._dnH) + "px";
   	this._crosshairElem.style.imageRendering = "-moz-crisp-edges";
     this._crosshairElem.style.imageRendering = "-webkit-crisp-edges";
     this._crosshairElem.style.imageRendering = "pixelated";
     this._crosshairElem.style.imageRendering = "crisp-edges";
   }
 
-  _initGlass(showGlass) {
-    this._showGlass = showGlass === false ? false : true;
+  _initGlass(options) {
+    this._showGlass = options.showGlass === false ? false : true;
 
     if (!this._showGlass) return;
 
@@ -99,11 +99,13 @@ class Peephole {
 
     this._glassElem = document.createElement("div");
     this._glassElem.classList.add("peephole-glass");
-    this._glassElem.style.crosshair = "none";
+    this._glassElem.style.display = "none";
     this._glassElem.style.position = "absolute";
     this._glassElem.style.width = this._gcW + "px";
     this._glassElem.style.height = this._gcH + "px";
     this._glassElem.style.border = "solid black 1px";
+    if (options.crosshair.round === true)
+      this._glassElem.style.borderRadius = Math.round(Math.min(this._gcW, this._gcH) / 2) + "px";
 
     this._imgElem.parentElement.insertBefore(this._glassElem, this._imgElem);
   }
@@ -138,7 +140,7 @@ class Peephole {
         this._onMousedown(event, { x : x, y : y });
       }.bind(this, this._touchNaturalPosition.x, this._touchNaturalPosition.y));
     if (this._showGlass)
-      this._glassElem.style.crosshair = "block";
+      this._glassElem.style.display = "block";
     this._crosshairElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
     this._onPeepholeMoveEvent(event);
   }
@@ -199,8 +201,8 @@ class Peephole {
   }
 
   _updateCrosshair(position) {
-    const dx = (position.x - Math.floor(this._dnW / 2)) * Math.round(this._dcW / this._dnW);
-    const dy = (position.y - Math.floor(this._dnH / 2)) * Math.round(this._dcH / this._dnH);
+    const dx = (position.x - Math.floor(this._dnW / 2)) * Math.round(this._ccW / this._dnW);
+    const dy = (position.y - Math.floor(this._dnH / 2)) * Math.round(this._ccH / this._dnH);
     const sDX = dx > 0 ? "-" + dx + "px" : -dx + "px";
     const sDY = dy > 0 ? "-" + dy + "px" : -dy + "px";
     this._crosshairElem.style.backgroundPosition = sDX + " " + sDY;
