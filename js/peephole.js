@@ -4,9 +4,12 @@ class Peephole {
     options = {
       speed : <int>,
       showGlass : <bool>,
-      displaySize : {
-        width : <int>,
-        height : <int>,
+      crosshair : {
+        size : {
+          width : <int>,
+          height : <int>,
+        },
+        round : <bool>,
       },
       events : {
         onMousedown : <function(event:<object>, position:{x:<int>, y:<int>})>,
@@ -14,11 +17,11 @@ class Peephole {
       },
     }
   */
-  constructor(imgElem, displayElem, options) {
+  constructor(imgElem, crosshairElem, options) {
     this.speed = options.speed || 1;
 
     this._initImage(imgElem);
-    this._initDisplay(displayElem, options.displaySize);
+    this._initCrosshair(crosshairElem, options.crosshair);
     this._initGlass(options.showGlass);
     this._initEvents(options.events || {});
     this._setupPositions();
@@ -29,9 +32,9 @@ class Peephole {
     console.log('Image Element:', this._imgElem);
     console.log('Image Natural Size: ' + this._nW + 'x' + this._nH);
     console.log('Image Client Size: ' + this._cW + 'x' + this._cH);
-    console.log('Display Element:', this._displayElem);
-    console.log('Display Natural Size: ' + this._dnW + 'x' + this._dnH);
-    console.log('Display Client Size: ' + this._dcW + 'x' + this._dcH);
+    console.log('Crosshair Element:', this._crosshairElem);
+    console.log('Crosshair Natural Size: ' + this._dnW + 'x' + this._dnH);
+    console.log('Crosshair Client Size: ' + this._dcW + 'x' + this._dcH);
     if (this._showGlass) {
       console.log('Glass Element:', this._glassElem);
       console.log('Glass Natural Size: ' + this._gnW + 'x' + this._gnH);
@@ -56,30 +59,32 @@ class Peephole {
       throw new Error("Image element size (width and height) should be specified!");
   }
 
-  _initDisplay(displayElem, displaySize) {
-    this._displayElem = displayElem;
+  _initCrosshair(crosshairElem, options) {
+    this._crosshairElem = crosshairElem;
 
-    this._dcW = this._displayElem.clientWidth;
-    this._dcH = this._displayElem.clientHeight;
+    this._dcW = this._crosshairElem.clientWidth;
+    this._dcH = this._crosshairElem.clientHeight;
     if (!this._dcW || !this._dcH)
-      throw new Error("Display element size (width and height) should be specified!");
-    if (!displaySize)
-      throw new Error("`displaySize` is required option!");
-    this._dnW = displaySize.width;
-    this._dnH = displaySize.height;
+      throw new Error("Crosshair element size (width and height) should be specified!");
+    if (options.round === true)
+      this._crosshairElem.style.borderRadius = Math.round(Math.min(this._dcW, this._dcH) / 2) + "px";
+    if (!options.size)
+      throw new Error("`crosshair.size` is required option!");
+    this._dnW = options.size.width;
+    this._dnH = options.size.height;
     if (this._dnW % 2 !== 1 || this._dnH % 2 !== 1)
-      throw new Error("Width and height of the display should be odd integers!");
+      throw new Error("Width and height of the crosshair should be odd integers!");
     if (this._dcW % this._dnW !== 0 || this._dcH % this._dnH !== 0)
-      throw new Error("Width and height of the display element should be divisible by its natural width and height.");
+      throw new Error("Width and height of the crosshair element should be divisible by its natural width and height.");
     if (!this._dnW || !this._dnH)
-      throw new Error("Display size (dW and dH parameters) should be nonzero integers!");
+      throw new Error("Crosshair size (dW and dH parameters) should be nonzero integers!");
 
-    this._displayElem.style.backgroundRepeat = "no-repeat";
-    this._displayElem.style.backgroundSize = this._nW * Math.round(this._dcW / this._dnW) + "px " + this._nH * Math.round(this._dcH / this._dnH) + "px";
-  	this._displayElem.style.imageRendering = "-moz-crisp-edges";
-    this._displayElem.style.imageRendering = "-webkit-crisp-edges";
-    this._displayElem.style.imageRendering = "pixelated";
-    this._displayElem.style.imageRendering = "crisp-edges";
+    this._crosshairElem.style.backgroundRepeat = "no-repeat";
+    this._crosshairElem.style.backgroundSize = this._nW * Math.round(this._dcW / this._dnW) + "px " + this._nH * Math.round(this._dcH / this._dnH) + "px";
+  	this._crosshairElem.style.imageRendering = "-moz-crisp-edges";
+    this._crosshairElem.style.imageRendering = "-webkit-crisp-edges";
+    this._crosshairElem.style.imageRendering = "pixelated";
+    this._crosshairElem.style.imageRendering = "crisp-edges";
   }
 
   _initGlass(showGlass) {
@@ -94,7 +99,7 @@ class Peephole {
 
     this._glassElem = document.createElement("div");
     this._glassElem.classList.add("peephole-glass");
-    this._glassElem.style.display = "none";
+    this._glassElem.style.crosshair = "none";
     this._glassElem.style.position = "absolute";
     this._glassElem.style.width = this._gcW + "px";
     this._glassElem.style.height = this._gcH + "px";
@@ -133,8 +138,8 @@ class Peephole {
         this._onMousedown(event, { x : x, y : y });
       }.bind(this, this._touchNaturalPosition.x, this._touchNaturalPosition.y));
     if (this._showGlass)
-      this._glassElem.style.display = "block";
-    this._displayElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
+      this._glassElem.style.crosshair = "block";
+    this._crosshairElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
     this._onPeepholeMoveEvent(event);
   }
 
@@ -157,7 +162,7 @@ class Peephole {
     }
     if (this._showGlass)
       this._updateglassElemPosition(clientPosition);
-    this._updateDisplay(this._naturalPosition);
+    this._updateCrosshair(this._naturalPosition);
   }
 
   _documentOnMouseupEvent(event) {
@@ -184,8 +189,8 @@ class Peephole {
   }
 
   _imgElemOnLoad(event) {
-    if (this._displayElem.style.backgroundImage != "")
-      this._displayElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
+    if (this._crosshairElem.style.backgroundImage != "")
+      this._crosshairElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
   }
 
   _updateglassElemPosition(position) {
@@ -193,12 +198,12 @@ class Peephole {
     this._glassElem.style.top = (position.y + this._gcH / 2) + "px";
   }
 
-  _updateDisplay(position) {
+  _updateCrosshair(position) {
     const dx = (position.x - Math.floor(this._dnW / 2)) * Math.round(this._dcW / this._dnW);
     const dy = (position.y - Math.floor(this._dnH / 2)) * Math.round(this._dcH / this._dnH);
     const sDX = dx > 0 ? "-" + dx + "px" : -dx + "px";
     const sDY = dy > 0 ? "-" + dy + "px" : -dy + "px";
-    this._displayElem.style.backgroundPosition = sDX + " " + sDY;
+    this._crosshairElem.style.backgroundPosition = sDX + " " + sDY;
   }
 
 }

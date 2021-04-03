@@ -14,7 +14,7 @@ body {
   border: solid black 1px;
 }
 
-#display {
+#crosshair {
   display: block;
   width: 210px;
   height: 210px;
