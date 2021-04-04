@@ -15,9 +15,7 @@ body {
 }
 
 #crosshair {
-  display: block;
-  width: 210px;
-  height: 210px;
+  display: none;
   border: solid black 1px;
 }
 

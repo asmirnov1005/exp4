@@ -5,11 +5,22 @@ class Peephole {
       speed : <int>,
       showGlass : <bool>,
       crosshair : {
+        clientSize : {
+          width : <int>,
+          height : <int>,
+        },
         size : {
           width : <int>,
           height : <int>,
         },
         round : <bool>,
+        position : {
+          static : bool,
+          shift : {
+            direction : <string>,
+            size : <int>,
+          },
+        },
       },
       events : {
         onMousedown : <function(event:<object>, position:{x:<int>, y:<int>})>,
@@ -29,16 +40,22 @@ class Peephole {
 
   log() {
     console.log('Speed: ', this.speed);
-    console.log('Image Element:', this._imgElem);
-    console.log('Image Natural Size: ' + this._nW + 'x' + this._nH);
-    console.log('Image Client Size: ' + this._cW + 'x' + this._cH);
-    console.log('Crosshair Element:', this._crosshairElem);
-    console.log('Crosshair Natural Size: ' + this._dnW + 'x' + this._dnH);
-    console.log('Crosshair Client Size: ' + this._ccW + 'x' + this._ccH);
+    console.log('Image element:', this._imgElem);
+    console.log('Image natural size: ' + this._nW + 'x' + this._nH);
+    console.log('Image client size: ' + this._cW + 'x' + this._cH);
+    console.log('Crosshair element:', this._crosshairElem);
+    console.log('Crosshair natural size: ' + this._dnW + 'x' + this._dnH);
+    console.log('Crosshair client size: ' + this._ccW + 'x' + this._ccH);
+    console.log('Crosshair is round: ' + this._crosshairIsRound);
+    console.log('Crosshair is static: ' + this._crosshairIsStatic);
+    if (!this._crosshairIsStatic) {
+      console.log('Crosshair shift order: ' + this._crosshairShiftOrder);
+      console.log('Crosshair shift size: ' + this._crosshairShiftSize);
+    }
     if (this._showGlass) {
-      console.log('Glass Element:', this._glassElem);
-      console.log('Glass Natural Size: ' + this._gnW + 'x' + this._gnH);
-      console.log('Glass Client Size: ' + this._gcW + 'x' + this._gcH);
+      console.log('Glass element:', this._glassElem);
+      console.log('Glass natural size: ' + this._gnW + 'x' + this._gnH);
+      console.log('Glass client size: ' + this._gcW + 'x' + this._gcH);
     }
   }
 
@@ -61,14 +78,39 @@ class Peephole {
 
   _initCrosshair(crosshairElem, options) {
     this._crosshairElem = crosshairElem;
+    this._crosshairIsRound = options.crosshair && options.crosshair.round === true;
+    this._crosshairIsStatic = !(options.crosshair && options.crosshair.position &&
+                                options.crosshair.position.static === false);
 
     this._ccW = this._crosshairElem.clientWidth;
     this._ccH = this._crosshairElem.clientHeight;
+    if (!this._crosshairIsStatic) {
+      this._crosshairElem.style.display = "none";
+      this._crosshairElem.style.position = "absolute";
+      this._ccW = options.crosshair.clientSize.width;
+      this._ccH = options.crosshair.clientSize.height;
+      this._crosshairElem.style.width = this._ccW + "px";
+      this._crosshairElem.style.height = this._ccH + "px";
+    }
     if (!this._ccW || !this._ccH)
       throw new Error("Crosshair element size (width and height) should be specified!");
-    if (options.crosshair.round === true)
+
+    const CROSSHAIR_SHIFT_ORDER = ["top", "bottom", "left", "right"];
+    const CROSSHAIR_SHIFT_SIZE = Math.round(Math.max(this._ccW, this._ccH) / 2);
+    this._crosshairShiftOrder = CROSSHAIR_SHIFT_ORDER;
+    this._crosshairShiftSize = CROSSHAIR_SHIFT_SIZE;
+    if (!this._crosshairIsStatic && options.crosshair && options.crosshair.position &&
+        options.crosshair.position.shift) {
+      this._crosshairShiftOrder = this._getCrosshairShiftOrder(
+        options.crosshair.position.shift.direction
+      ) || CROSSHAIR_SHIFT_ORDER;
+      this._crosshairShiftSize = options.crosshair.position.shift.size ||
+                                 CROSSHAIR_SHIFT_SIZE;
+    }
+    if (this._crosshairIsRound)
       this._crosshairElem.style.borderRadius = Math.round(Math.min(this._ccW, this._ccH) / 2) + "px";
-    if (!options.crosshair.size)
+
+    if (!options.crosshair || !options.crosshair.size)
       throw new Error("`crosshair.size` is required option!");
     this._dnW = options.crosshair.size.width;
     this._dnH = options.crosshair.size.height;
@@ -104,7 +146,7 @@ class Peephole {
     this._glassElem.style.width = this._gcW + "px";
     this._glassElem.style.height = this._gcH + "px";
     this._glassElem.style.border = "solid black 1px";
-    if (options.crosshair.round === true)
+    if (this._crosshairIsRound)
       this._glassElem.style.borderRadius = Math.round(Math.min(this._gcW, this._gcH) / 2) + "px";
 
     this._imgElem.parentElement.insertBefore(this._glassElem, this._imgElem);
@@ -117,6 +159,10 @@ class Peephole {
     this._imgElem.addEventListener('load', this._imgElemOnLoad.bind(this));
     this._imgElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
     this._imgElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
+    if (!this._crosshairIsStatic) {
+      this._crosshairElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
+      this._crosshairElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
+    }
     if (this._showGlass) {
       this._glassElem.addEventListener("mousedown", this._imgElemOnMousedownEvent.bind(this));
       this._glassElem.addEventListener("touchstart", this._imgElemOnMousedownEvent.bind(this));
@@ -139,6 +185,8 @@ class Peephole {
       setTimeout(function (x, y) {
         this._onMousedown(event, { x : x, y : y });
       }.bind(this, this._touchNaturalPosition.x, this._touchNaturalPosition.y));
+    if (!this._crosshairIsStatic)
+      this._crosshairElem.style.display = "block";
     if (this._showGlass)
       this._glassElem.style.display = "block";
     this._crosshairElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
@@ -162,9 +210,23 @@ class Peephole {
       x : Math.round(this._naturalPosition.x * this._cW / this._nW) - 1,
       y : Math.round(this._naturalPosition.y * this._cH / this._nH) - 1,
     }
+    if (!this._crosshairIsStatic)
+      this._updateCrosshairElemPosition({ x : event.pageX, y : event.pageY });
     if (this._showGlass)
-      this._updateglassElemPosition(clientPosition);
+      this._updateGlassElemPosition(clientPosition);
     this._updateCrosshair(this._naturalPosition);
+  }
+
+  _getCrosshairShiftOrder(direction) {
+    if (direction == "top")
+      return ["top", "bottom", "left", "right"];
+    if (direction == "bottom")
+      return ["bottom", "top", "left", "right"];
+    if (direction == "left")
+      return ["left", "right", "top", "bottom"];
+    if (direction == "right")
+      return ["right", "left", "top", "bottom"];
+    throw new Error("Wrong crosshair shift direction value.");
   }
 
   _documentOnMouseupEvent(event) {
@@ -195,7 +257,52 @@ class Peephole {
       this._crosshairElem.style.backgroundImage = "url('" + this._imgElem.src + "')";
   }
 
-  _updateglassElemPosition(position) {
+  _updateCrosshairElemPosition(position) {
+    const preRect = this._imgElem.getBoundingClientRect();
+    const rect = {
+      top : window.pageYOffset + preRect.top,
+      bottom : window.pageYOffset + preRect.bottom,
+      left : window.pageXOffset + preRect.left,
+      right : window.pageXOffset + preRect.right,
+    };
+    const boundedX = Math.max(rect.left, Math.min(rect.right, position.x));
+    const boundedY = Math.max(rect.top, Math.min(rect.bottom, position.y));
+    for (const direction of this._crosshairShiftOrder) {
+      const elemCenterX = boundedX + (direction == "left" ? -this._crosshairShiftSize : (direction == "right" ? this._crosshairShiftSize : 0));
+      const elemCenterY = boundedY + (direction == "top" ? -this._crosshairShiftSize : (direction == "bottom" ? this._crosshairShiftSize : 0));
+      if (elemCenterX - this._ccW / 2 < rect.left || elemCenterX + this._ccW / 2 > rect.right) continue;
+      if (elemCenterY - this._ccH / 2 < rect.top || elemCenterY + this._ccH / 2 > rect.bottom) continue;
+      this._crosshairElem.style.left = (elemCenterX - this._ccW / 2) + "px";
+      this._crosshairElem.style.top = (elemCenterY - this._ccH / 2) + "px";
+      return;
+    }
+    if (boundedX <= rect.left + this._crosshairShiftSize + this._ccW / 2 &&
+        boundedY <= rect.top + this._crosshairShiftSize + this._ccH / 2) {
+      this._crosshairElem.style.left = rect.left + "px";
+      this._crosshairElem.style.top = rect.top + "px";
+      return;
+    }
+    if (boundedX >= rect.right - this._crosshairShiftSize - this._ccW / 2 &&
+        boundedY <= rect.top + this._crosshairShiftSize + this._ccH / 2) {
+      this._crosshairElem.style.left = (rect.right - this._ccW) + "px";
+      this._crosshairElem.style.top = rect.top + "px";
+      return;
+    }
+    if (boundedX <= rect.left + this._crosshairShiftSize + this._ccW / 2 &&
+        boundedY >= rect.bottom - this._crosshairShiftSize - this._ccH / 2) {
+      this._crosshairElem.style.left = rect.left + "px";
+      this._crosshairElem.style.top = (rect.bottom - this._ccH) + "px";
+      return;
+    }
+    if (boundedX >= rect.right - this._crosshairShiftSize - this._ccW / 2 &&
+        boundedY >= rect.bottom - this._crosshairShiftSize - this._ccH / 2) {
+      this._crosshairElem.style.left = (rect.right - this._ccW) + "px";
+      this._crosshairElem.style.top = (rect.bottom - this._ccH) + "px";
+      return;
+    }
+  }
+
+  _updateGlassElemPosition(position) {
     this._glassElem.style.left = (position.x + this._gcW / 2) + "px";
     this._glassElem.style.top = (position.y + this._gcH / 2) + "px";
   }
