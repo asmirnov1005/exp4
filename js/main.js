@@ -1,5 +1,5 @@
 const imgElem = document.getElementById("image");
-const displayElem = document.getElementById("display");
+const crosshairElem = document.getElementById("crosshair");
 
 let ph = null;
 
@@ -16,12 +16,22 @@ function imgElemLoaded() {
   if (ph) return;
 
   let phOptions = {
-    displaySize : { width : 21, height : 21 },
+    crosshair : {
+      clientSize : { width : 110, height : 110 },
+      size : { width : 11, height : 11 },
+      position : {
+        static : false,
+        shift : {
+          direction : "top",
+          size : 70,
+        },
+      },
+    },
     events : { onMousedown : onMousedown, onMouseup : onMouseup },
     speed : 0.25,
     showGlass : false,
   };
-  ph = new Peephole(imgElem, displayElem, phOptions);
+  ph = new Peephole(imgElem, crosshairElem, phOptions);
 
   ph.log();
 }
