@@ -13,7 +13,6 @@ class Peephole {
           width : <int>,
           height : <int>,
         },
-        round : <bool>,
         position : {
           static : bool,
           shift : {
@@ -46,7 +45,6 @@ class Peephole {
     console.log('Crosshair element:', this._crosshairElem);
     console.log('Crosshair natural size: ' + this._dnW + 'x' + this._dnH);
     console.log('Crosshair client size: ' + this._ccW + 'x' + this._ccH);
-    console.log('Crosshair is round: ' + this._crosshairIsRound);
     console.log('Crosshair is static: ' + this._crosshairIsStatic);
     if (!this._crosshairIsStatic) {
       console.log('Crosshair shift order: ' + this._crosshairShiftOrder);
@@ -78,7 +76,6 @@ class Peephole {
 
   _initCrosshair(crosshairElem, options) {
     this._crosshairElem = crosshairElem;
-    this._crosshairIsRound = options.crosshair && options.crosshair.round === true;
     this._crosshairIsStatic = !(options.crosshair && options.crosshair.position &&
                                 options.crosshair.position.static === false);
 
@@ -107,8 +104,6 @@ class Peephole {
       this._crosshairShiftSize = options.crosshair.position.shift.size ||
                                  CROSSHAIR_SHIFT_SIZE;
     }
-    if (this._crosshairIsRound)
-      this._crosshairElem.style.borderRadius = Math.round(Math.min(this._ccW, this._ccH) / 2) + "px";
 
     if (!options.crosshair || !options.crosshair.size)
       throw new Error("`crosshair.size` is required option!");
@@ -146,8 +141,6 @@ class Peephole {
     this._glassElem.style.width = this._gcW + "px";
     this._glassElem.style.height = this._gcH + "px";
     this._glassElem.style.border = "solid black 1px";
-    if (this._crosshairIsRound)
-      this._glassElem.style.borderRadius = Math.round(Math.min(this._gcW, this._gcH) / 2) + "px";
 
     this._imgElem.parentElement.insertBefore(this._glassElem, this._imgElem);
   }

@@ -19,7 +19,6 @@ function imgElemLoaded() {
     crosshair : {
       clientSize : { width : 110, height : 110 },
       size : { width : 11, height : 11 },
-      round : true,
       position : {
         static : false,
         shift : {

@@ -13,14 +13,15 @@ body {
 }
 
 #image {
-  width: 500px;
-  height: 500px;
+  width: 1000px;
+  height: 1000px;
   border: solid black 1px;
 }
 
 #crosshair {
   display: none;
   border: solid black 1px;
+  border-radius: 55px;
 }
 
 #target-top {
