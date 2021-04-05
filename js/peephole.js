@@ -169,7 +169,7 @@ class Peephole {
   _imgElemOnMousedownEvent(event) {
     event.preventDefault();
 
-    this._touchClientPosition = this._cursorPosition(event);
+    this._touchClientPosition = this._cursorPosition(this._extractEvent(event));
     this._touchNaturalPosition = {
       x : Math.round(this._touchClientPosition.x * this._nW / this._cW),
       y : Math.round(this._touchClientPosition.y * this._nH / this._cH),
@@ -188,6 +188,7 @@ class Peephole {
 
   _onPeepholeMoveEvent(event) {
     event.preventDefault();
+    event = this._extractEvent(event);
 
     if (!this._touchClientPosition) return;
     const clientOrigin = this._touchClientPosition;
@@ -234,15 +235,18 @@ class Peephole {
   }
 
   _cursorPosition(event) {
-    if (event.type == "touchstart" || event.type == "touchmove" || event.type == "touchend") {
-      event = event.originalEvent || event;
-      const touches = event.touches || event.changedTouches;
-      event = touches[0];
-    }
     const rect = this._imgElem.getBoundingClientRect();
     const x = event.pageX - rect.left - window.pageXOffset;
     const y = event.pageY - rect.top - window.pageYOffset;
     return { x : x, y : y };
+  }
+
+  _extractEvent(event) {
+    if (event.type == "touchstart" || event.type == "touchmove" || event.type == "touchend") {
+      event = event.originalEvent || event;
+      return (event.touches || event.changedTouches)[0];
+    }
+    return event;
   }
 
   _imgElemOnLoad(event) {
