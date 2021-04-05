@@ -17,10 +17,16 @@ function imgElemLoaded() {
 
   let phOptions = {
     crosshair : {
-      clientSize : { width : 210, height : 210 },
-      size : { width : 21, height : 21 },
+      clientSize : { width : 110, height : 110 },
+      size : { width : 11, height : 11 },
       round : true,
-      position : { static : false },
+      position : {
+        static : false,
+        shift : {
+          direction : "top",
+          size : 70,
+        },
+      },
     },
     events : { onMousedown : onMousedown, onMouseup : onMouseup },
     speed : 0.25,

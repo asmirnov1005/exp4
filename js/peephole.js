@@ -278,26 +278,26 @@ class Peephole {
     }
     if (boundedX <= rect.left + this._crosshairShiftSize + this._ccW / 2 &&
         boundedY <= rect.top + this._crosshairShiftSize + this._ccH / 2) {
-      this._crosshairElem.style.left = rect.left + "px";
-      this._crosshairElem.style.top = rect.top + "px";
+      this._crosshairElem.style.left = (rect.left + this._crosshairShiftSize - this._ccW / 2) + "px";
+      this._crosshairElem.style.top = (rect.top + this._crosshairShiftSize - this._ccH / 2) + "px";
       return;
     }
     if (boundedX >= rect.right - this._crosshairShiftSize - this._ccW / 2 &&
         boundedY <= rect.top + this._crosshairShiftSize + this._ccH / 2) {
-      this._crosshairElem.style.left = (rect.right - this._ccW) + "px";
-      this._crosshairElem.style.top = rect.top + "px";
+      this._crosshairElem.style.left = (rect.right - this._crosshairShiftSize - this._ccW / 2) + "px";
+      this._crosshairElem.style.top = (rect.top + this._crosshairShiftSize - this._ccH / 2) + "px";
       return;
     }
     if (boundedX <= rect.left + this._crosshairShiftSize + this._ccW / 2 &&
         boundedY >= rect.bottom - this._crosshairShiftSize - this._ccH / 2) {
-      this._crosshairElem.style.left = rect.left + "px";
-      this._crosshairElem.style.top = (rect.bottom - this._ccH) + "px";
+      this._crosshairElem.style.left = (rect.left + this._crosshairShiftSize - this._ccW / 2) + "px";
+      this._crosshairElem.style.top = (rect.bottom - this._crosshairShiftSize - this._ccH / 2) + "px";
       return;
     }
     if (boundedX >= rect.right - this._crosshairShiftSize - this._ccW / 2 &&
         boundedY >= rect.bottom - this._crosshairShiftSize - this._ccH / 2) {
-      this._crosshairElem.style.left = (rect.right - this._ccW) + "px";
-      this._crosshairElem.style.top = (rect.bottom - this._ccH) + "px";
+      this._crosshairElem.style.left = (rect.right - this._crosshairShiftSize - this._ccW / 2) + "px";
+      this._crosshairElem.style.top = (rect.bottom - this._crosshairShiftSize - this._ccH / 2) + "px";
       return;
     }
   }

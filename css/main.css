@@ -3,14 +3,18 @@ body {
 }
 
 #main-container {
+  margin: 10px;
   display: flex;
   align-items: center;
+}
+
+#bottom-container {
+  margin: 10px;
 }
 
 #image {
   width: 500px;
   height: 500px;
-  margin: 10px;
   border: solid black 1px;
 }
 
@@ -22,9 +26,9 @@ body {
 #target-top {
   display: block;
   position: relative;
-  left: 100px;
+  left: 50px;
   width: 8px;
-  height: 99px;
+  height: 49px;
   border-bottom: solid 1px #ff0000;
   border-left: solid 1px #ff0000;
   border-right: solid 1px #ff0000;
@@ -33,10 +37,10 @@ body {
 #target-bottom {
   display: block;
   position: relative;
-  left: 100px;
+  left: 50px;
   top: 10px;
   width: 8px;
-  height: 99px;
+  height: 49px;
   border-top: solid 1px #ff0000;
   border-left: solid 1px #ff0000;
   border-right: solid 1px #ff0000;
@@ -45,8 +49,8 @@ body {
 #target-left {
   display: block;
   position: relative;
-  top: -100px;
-  width: 99px;
+  top: -50px;
+  width: 49px;
   height: 8px;
   border-top: solid 1px #ff0000;
   border-bottom: solid 1px #ff0000;
@@ -56,9 +60,9 @@ body {
 #target-right {
   display: block;
   position: relative;
-  top: -110px;
-  left: 110px;
-  width: 99px;
+  top: -60px;
+  left: 60px;
+  width: 49px;
   height: 8px;
   border-top: solid 1px #ff0000;
   border-bottom: solid 1px #ff0000;
